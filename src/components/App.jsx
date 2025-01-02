@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
 import Ducks from "./Ducks";
 import Login from "./Login";
@@ -12,6 +12,8 @@ import "./styles/App.css";
 function App() {
   const [isLoggedIn, setIsLoggedin] = useState(false);
 
+  const navigate = useNavigate();
+
   const handleRegistration = ({
     username,
     email,
@@ -19,9 +21,12 @@ function App() {
     confirmPassword,
   }) => {
     if (password === confirmPassword) {
-      auth.Register(username, password, email).then(() => {
-        // TODO: handle successful registration
-      });
+      auth
+        .register(username, password, email)
+        .then(() => {
+          navigate("/login");
+        })
+        .catch(console.error);
     }
   };
 
