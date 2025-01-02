@@ -55,7 +55,7 @@ function App() {
         path="/register"
         element={
           <div className="registerContainer">
-            <Register />
+            <Register handleRegistration={handleRegistration} />
           </div>
         }
       />
