@@ -8,6 +8,7 @@ import Register from "./Register";
 import ProtectedRoute from "./ProtectedRoute";
 import * as auth from "../utils/auth";
 import "./styles/App.css";
+import { setToken } from "../utils/token";
 
 function App() {
   const [userData, setUserData] = useState({ username: "", email: "" });
@@ -24,6 +25,8 @@ function App() {
       .authorise(username, password)
       .then((data) => {
         if (data.jwt) {
+          // Save the token to local storage
+          setToken(data.jwt);
           setUserData(data.user);
           setIsLoggedin(true);
           navigate("/ducks");
