@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 
 import Ducks from "./Ducks";
@@ -8,7 +8,7 @@ import Register from "./Register";
 import ProtectedRoute from "./ProtectedRoute";
 import * as auth from "../utils/auth";
 import "./styles/App.css";
-import { setToken } from "../utils/token";
+import { getToken, setToken } from "../utils/token";
 
 function App() {
   const [userData, setUserData] = useState({ username: "", email: "" });
@@ -50,6 +50,16 @@ function App() {
         .catch(console.error);
     }
   };
+
+  useEffect(() => {
+    const jwt = getToken();
+
+    if (!jwt) {
+      return;
+    }
+
+    // TODO - handle JWT
+  }, []);
 
   return (
     <Routes>
