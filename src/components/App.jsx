@@ -7,12 +7,33 @@ import MyProfile from "./MyProfile";
 import Register from "./Register";
 import ProtectedRoute from "./ProtectedRoute";
 import * as auth from "../utils/auth";
+import * as api from "../utils/api";
 import "./styles/App.css";
 import { getToken, setToken } from "../utils/token";
 
 function App() {
+  useEffect(() => {
+    const jwt = getToken();
+
+    if (!jwt) {
+      return;
+    }
+
+    // Call the function, passing it the JWT.
+    api
+      .getUserInfo(jwt)
+      .then((username, email) => {
+        // If the response is successful, log the user in, save their
+        // data to state, and navigate them to /ducks.
+        setIsLoggedIn(true);
+        setUserData({ username, email });
+        navigate("/ducks");
+      })
+      .catch(console.error);
+  }, []);
+
   const [userData, setUserData] = useState({ username: "", email: "" });
-  const [isLoggedIn, setIsLoggedin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const navigate = useNavigate();
 
@@ -28,7 +49,7 @@ function App() {
           // Save the token to local storage
           setToken(data.jwt);
           setUserData(data.user);
-          setIsLoggedin(true);
+          setIsLoggedIn(true);
           navigate("/ducks");
         }
       })
@@ -50,16 +71,6 @@ function App() {
         .catch(console.error);
     }
   };
-
-  useEffect(() => {
-    const jwt = getToken();
-
-    if (!jwt) {
-      return;
-    }
-
-    // TODO - handle JWT
-  }, []);
 
   return (
     <Routes>
