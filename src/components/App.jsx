@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+  useLocation,
+} from "react-router-dom";
 
 import Ducks from "./Ducks";
 import Login from "./Login";
@@ -12,49 +18,13 @@ import "./styles/App.css";
 import { getToken, setToken } from "../utils/token";
 
 function App() {
-  useEffect(() => {
-    const jwt = getToken();
-
-    if (!jwt) {
-      return;
-    }
-
-    // Call the function, passing it the JWT.
-    api
-      .getUserInfo(jwt)
-      .then((username, email) => {
-        // If the response is successful, log the user in, save their
-        // data to state, and navigate them to /ducks.
-        setIsLoggedIn(true);
-        setUserData({ username, email });
-        navigate("/ducks");
-      })
-      .catch(console.error);
-  }, []);
-
   const [userData, setUserData] = useState({ username: "", email: "" });
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const navigate = useNavigate();
-
-  const handleLogin = ({ username, password }) => {
-    if (!username || !password) {
-      return;
-    }
-
-    auth
-      .authorise(username, password)
-      .then((data) => {
-        if (data.jwt) {
-          // Save the token to local storage
-          setToken(data.jwt);
-          setUserData(data.user);
-          setIsLoggedIn(true);
-          navigate("/ducks");
-        }
-      })
-      .catch(console.error);
-  };
+  // Invoke the hook. It's necessary to invoke the hook in both
+  // components.
+  const location = useLocation();
 
   const handleRegistration = ({
     username,
@@ -71,6 +41,48 @@ function App() {
         .catch(console.error);
     }
   };
+
+  const handleLogin = ({ username, password }) => {
+    if (!username || !password) {
+      return;
+    }
+
+    auth
+      .authorise(username, password)
+      .then((data) => {
+        if (data.jwt) {
+          setToken(data.jwt);
+          setUserData(data.user);
+          setIsLoggedIn(true);
+
+          // After login, instead of navigating always to /ducks,
+          // navigate to the location that is stored in state. If
+          // there is no stored location, we default to
+          // redirecting to /ducks.
+          const redirectPath = location.state?.from?.pathname || "/ducks";
+          navigate(redirectPath);
+        }
+      })
+      .catch(console.error);
+  };
+
+  useEffect(() => {
+    const jwt = getToken();
+
+    if (!jwt) {
+      return;
+    }
+
+    api
+      .getUserInfo(jwt)
+      .then((username, email) => {
+        setIsLoggedIn(true);
+        setUserData({ username, email });
+        // Remove the call to the navigate() hook: it's not
+        // necessary any more.
+      })
+      .catch(console.error);
+  }, []);
 
   return (
     <Routes>
@@ -90,20 +102,30 @@ function App() {
           </ProtectedRoute>
         }
       />
+      {/* Wrap our /login route in a ProtectedRoute. Make sure to
+      specify the anonymous prop, to redirect logged-in users
+      to "/". */}
       <Route
         path="/login"
         element={
-          <div className="loginContainer">
-            <Login handleLogin={handleLogin} />
-          </div>
+          <ProtectedRoute isLoggedIn={isLoggedIn} anonymous>
+            <div className="loginContainer">
+              <Login handleLogin={handleLogin} />
+            </div>
+          </ProtectedRoute>
         }
       />
+      {/* Wrap our /register route in a ProtectedRoute. Make sure to
+      specify the anonymous prop, to redirect logged-in users
+      to "/". */}
       <Route
         path="/register"
         element={
-          <div className="registerContainer">
-            <Register handleRegistration={handleRegistration} />
-          </div>
+          <ProtectedRoute isLoggedIn={isLoggedIn} anonymous>
+            <div className="registerContainer">
+              <Register handleRegistration={handleRegistration} />
+            </div>
+          </ProtectedRoute>
         }
       />
       <Route
