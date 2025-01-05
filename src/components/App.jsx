@@ -7,12 +7,12 @@ import {
   useLocation,
 } from "react-router-dom";
 
+import AppContext from "../context/AppContext";
 import Ducks from "./Ducks";
 import Login from "./Login";
 import MyProfile from "./MyProfile";
 import Register from "./Register";
 import ProtectedRoute from "./ProtectedRoute";
-import AppContext from "../context/AppContext";
 import * as auth from "../utils/auth";
 import * as api from "../utils/api";
 import "./styles/App.css";
@@ -81,12 +81,13 @@ function App() {
   return (
     // We are passing an object containing isLoggedIn as the value
     // of the context provider.
-    <AppContext.Provider value={{ isLoggedIn }}>
+    <AppContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
       <Routes>
+        {/* In App.jsx, remove the isLoggedIn prop from both instances of ProtectedRoute.  */}
         <Route
           path="/ducks"
           element={
-            <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <ProtectedRoute>
               <Ducks setIsLoggedIn={setIsLoggedIn} />
             </ProtectedRoute>
           }
@@ -94,7 +95,7 @@ function App() {
         <Route
           path="/my-profile"
           element={
-            <ProtectedRoute isLoggedIn={isLoggedIn}>
+            <ProtectedRoute>
               <MyProfile userData={userData} setIsLoggedIn={setIsLoggedIn} />
             </ProtectedRoute>
           }
@@ -102,7 +103,7 @@ function App() {
         <Route
           path="/login"
           element={
-            <ProtectedRoute isLoggedIn={isLoggedIn} anonymous>
+            <ProtectedRoute anonymous>
               <div className="loginContainer">
                 <Login handleLogin={handleLogin} />
               </div>
@@ -112,7 +113,7 @@ function App() {
         <Route
           path="/register"
           element={
-            <ProtectedRoute isLoggedIn={isLoggedIn} anonymous>
+            <ProtectedRoute anonymous>
               <div className="registerContainer">
                 <Register handleRegistration={handleRegistration} />
               </div>
